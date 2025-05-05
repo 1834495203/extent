@@ -1184,7 +1184,7 @@ function setupListeners() {
 
 jQuery(async function () {
     async function addExtensionControls() {
-        const settingsHtml = await renderExtensionTemplateAsync('memory', 'settings', { defaultSettings });
+        const settingsHtml = await renderExtensionTemplateAsync('third-party/extent', 'example', { defaultSettings });
         $('#summarize_container').append(settingsHtml);
         setupListeners();
         $('#summaryExtensionPopoutButton').off('click').on('click', function (e) {
