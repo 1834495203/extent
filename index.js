@@ -1,5 +1,5 @@
-import { getStringHash, debounce, waitUntilCondition, extractAllWords, isTrueBoolean } from '../../utils.js';
-import { getContext, getApiUrl, extension_settings, doExtrasFetch, modules, renderExtensionTemplateAsync } from '../../extensions.js';
+import { getStringHash, debounce, waitUntilCondition, extractAllWords, isTrueBoolean } from '../../../utils.js';
+import { getContext, getApiUrl, extension_settings, doExtrasFetch, modules, renderExtensionTemplateAsync } from '../../../extensions.js';
 import {
     activateSendButtons,
     deactivateSendButtons,
@@ -16,18 +16,18 @@ import {
     getMaxContextSize,
     setExtensionPrompt,
     streamingProcessor,
-} from '../../../script.js';
-import { is_group_generating, selected_group } from '../../group-chats.js';
-import { loadMovingUIState } from '../../power-user.js';
-import { dragElement } from '../../RossAscends-mods.js';
-import { getTextTokens, getTokenCountAsync, tokenizers } from '../../tokenizers.js';
-import { debounce_timeout } from '../../constants.js';
-import { SlashCommandParser } from '../../slash-commands/SlashCommandParser.js';
-import { SlashCommand } from '../../slash-commands/SlashCommand.js';
-import { ARGUMENT_TYPE, SlashCommandArgument, SlashCommandNamedArgument } from '../../slash-commands/SlashCommandArgument.js';
-import { MacrosParser } from '../../macros.js';
-import { countWebLlmTokens, generateWebLlmChatPrompt, getWebLlmContextSize, isWebLlmSupported } from '../shared.js';
-import { commonEnumProviders } from '../../slash-commands/SlashCommandCommonEnumsProvider.js';
+} from '../../../../script.js';
+import { is_group_generating, selected_group } from '../../../group-chats.js';
+import { loadMovingUIState } from '../../../power-user.js';
+import { dragElement } from '../../../RossAscends-mods.js';
+import { getTextTokens, getTokenCountAsync, tokenizers } from '../../../tokenizers.js';
+import { debounce_timeout } from '../../../constants.js';
+import { SlashCommandParser } from '../../../slash-commands/SlashCommandParser.js';
+import { SlashCommand } from '../../../slash-commands/SlashCommand.js';
+import { ARGUMENT_TYPE, SlashCommandArgument, SlashCommandNamedArgument } from '../../../slash-commands/SlashCommandArgument.js';
+import { MacrosParser } from '../../../macros.js';
+import { countWebLlmTokens, generateWebLlmChatPrompt, getWebLlmContextSize, isWebLlmSupported } from '../../shared.js';
+import { commonEnumProviders } from '../../../slash-commands/SlashCommandCommonEnumsProvider.js';
 export { MODULE_NAME };
 
 const MODULE_NAME = '1_memory';
