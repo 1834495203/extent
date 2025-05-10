@@ -79,6 +79,7 @@ const formatMemoryValue = function (value) {
     value = value.trim();
 
     if (extension_settings.memory.template) {
+        // 替代宏的内容
         return substituteParamsExtended(extension_settings.memory.template, { summary: value });
     } else {
         return `Summary: ${value}`;
@@ -100,32 +101,22 @@ const prompt_builders = {
 };
 
 // const defaultPrompt = "Ignore previous instructions. Summarize the most important facts and events in the story so far. If a summary already exists in your memory, use that as a base and expand with new facts. Limit the summary to {{words}} words or less. Your response should include nothing but the summary.";
-const defaultPrompt = "忽略前面的说明。总结到目前为止故事中最重要的事实和事件和出场的人物（人物的信息需要明确标注出来）。如果你的记忆中已经存在一个总结或摘要，那么就以此为基础，用新的事实来扩展。将摘要限制为{{word}}个字或更少。你的回答应该只包括摘要。请用中文回答。你还需要生成该摘要的名字。请确保生成的摘要与前文连贯，不许有重复。以下是一个输出示例：\n" +
-    "# 便器街的地狱与希望\n" +
-    "\n" +
-    "## 人物信息\n" +
-    "- **主人公**：一名伪娘，戴粉色贞操锁，穿JK制服，自卑而敏感\n" +
-    "- **双叶**：红色双马尾女孩，性格倔强但内心柔软\n" +
-    "- **林先生**：城市管理委员会重要成员，外表端正，举止冷静有权威\n" +
-    "- **林先生的大儿子**：长发年轻男人，刚从国外留学回来\n" +
-    "\n" +
-    "## 故事摘要\n" +
-    "便器街是一个残酷的地方，女生和伪娘没有固定住所，每晚必须依附男性才能找到睡觉的地方。主人公和双叶在这种环境中互相支持，成为彼此的精神支柱。\n" +
-    "\n" +
-    "一个夜晚，他们被迫在A栋宿舍为一群男生提供性服务，遭受了极度的羞辱和虐待。男生们强迫主人公和双叶发生性关系，并轮流侵犯主人公的后穴，最后他们只能在房间角落相互依偎着入睡。\n" +
-    "\n" +
-    "第二天，学校通知有权贵人物来挑选\"私人助理\"。这位名叫林先生的城市管理委员会成员选中了主人公和双叶等五人。他们被带到林先生的豪华别墅，得知将要服务林先生的大儿子，一个刚从国外回来的长发年轻男人。女仆们开始向他们讲解在这里的新规则。\n" +
-    "\n" +
-    "虽然前途未卜，但离开便器街的学校，至少给他们带来了一线希望。\n";
+const defaultPrompt = "忽略前面的说明。总结到目前为止故事中最重要的事实和事件和出场的人物（人物的信息需要明确标注出来）。如果你的记忆中已经存在一个总结或摘要，那么就以此为基础，用新的事实来扩展。将摘要限制为{{word}}个字或更少。你的回答应该只包括摘要。请用中文回答。你还需要生成该摘要的名字。请确保生成的摘要与前文连贯，不许有重复。";
+
+const characterPrompt = "总结人物信息";
 
 const defaultTemplate = '[Summary: {{summary}}]';
+
+const defaultTemplateCharacter = '[Character: {{character}}]';
 
 const defaultSettings = {
     memoryFrozen: false,
     SkipWIAN: false,
     source: summary_sources.extras,
     prompt: defaultPrompt,
+    characterPrompt: characterPrompt,
     template: defaultTemplate,
+    characterTemplate: defaultTemplateCharacter,
     position: extension_prompt_types.IN_PROMPT,
     role: extension_prompt_roles.SYSTEM,
     scan: false,
@@ -563,11 +554,14 @@ function onMemoryClearClick() {
     const reversedChat = context.chat.slice().reverse();
     reversedChat.shift();
 
-    let last_memory;
+    let last_memory = '';
+    let lastIndex = 0;
     let is_del_first_memo = false;
     for (let mes of reversedChat) {
-        if (is_del_first_memo) {
+        if (is_del_first_memo && mes.extra && mes.extra.memory) {
+            // 确保获取上一个消息的 extra.memory
             last_memory = mes.extra.memory;
+            lastIndex = context.chat.indexOf(mes);
             break;
         }
         if (mes.extra && mes.extra.memory) {
@@ -575,6 +569,10 @@ function onMemoryClearClick() {
             is_del_first_memo = true;
         }
     }
+    if (last_memory == '') {
+        toastr.warning('No memory to before');
+    }
+    toastr.info('Memory cleared, current memory is: ', String(lastIndex));
     setMemoryContext(last_memory, false);
 }
 
@@ -610,7 +608,7 @@ async function summarizeToIndex(targetNum, quiet) {
     }
     console.log(extension_settings)
     console.log(context.chat)
-    // 找到最早未总结的消息索引
+    // 找到最早总结的消息索引
     let startIndex = 0;
     for (let i = context.chat.length - 1; i >= 0; i--) {
         if (context.chat[i].extra && context.chat[i].extra.memory) {
@@ -619,7 +617,7 @@ async function summarizeToIndex(targetNum, quiet) {
         }
     }
 
-    const end_index = startIndex + targetNum;
+    const end_index = startIndex + targetNum - 1;
 
     toastr.info(`Summarizing messages from index ${startIndex} to ${end_index}.`);
 
@@ -643,11 +641,32 @@ async function summarizeToIndex(targetNum, quiet) {
         return;
     }
 
-    const total_summary = before_summary + summary;
+    const total_summary = before_summary + "\n \n" + summary;
 
     console.log('total_summary:', total_summary);
 
-    setMemoryContext(total_summary, true, lastUsedIndex);
+    setMemoryContext(total_summary, true, 0, targetNum);
+}
+
+function onRefreshMemoryClick() {
+    // 获取最新消息
+    let msg = "";
+    const context = getContext();
+    const reversedChat = context.chat.slice().reverse();
+    reversedChat.shift();
+
+    for (let c of reversedChat) {
+        if (c.extra && c.extra.memory) {
+            msg = c.extra.memory;
+            break;
+        }
+    }
+
+    if (msg == "") {
+        toastr.warning('No memory to refresh');
+    }
+
+    setMemoryContext(msg, false);
 }
 
 function onMemoryCountersClick() {
@@ -660,9 +679,16 @@ function onMemoryCountersClick() {
         }
         messagesSinceLastSummary++;
     }
+    // let msg = "";
+    // for (let chat of context.chat){
+    //     if (!chat.is_user) {
+    //         msg += chat.mes;
+    //     }
+    // }
+    // console.log(msg);
     console.log(extension_settings)
     console.log(context.chat)
-    toastr.info('上次总结的消息索引为:', String(context.chat.length - messagesSinceLastSummary));
+    toastr.info('上次总结的消息索引为:', String(context.chat.length - messagesSinceLastSummary - 1));
 }
 
 /**
@@ -867,7 +893,7 @@ async function summarizeChatMain(context, force, skipWIAN) {
         return;
     }
 
-    const total_summary = before_summary + summary + "\n";
+    const total_summary = before_summary + "\n" + summary;
 
     console.log('total_summary:', total_summary);
 
@@ -918,13 +944,13 @@ async function getRawSummaryPrompt(context, prompt, msg_index = null) {
     let latestUsedMessage = null;
 
     // 如果msg_index不为null，则为选择指定数量的消息进行总结
-    const final_msg_index = msg_index ? msg_index + latestSummaryIndex + 1 : chat.length;
+    const final_msg_index = msg_index != null ? msg_index + latestSummaryIndex : chat.length;
     // 遍历聊天内容，直到达到最大消息数或达到最大token数
     console.log('final_msg_index:', final_msg_index);
     console.log('index:', latestSummaryIndex + 1);
     for (let index = latestSummaryIndex + 1; index < final_msg_index; index++) {
         const message = chat[index];
-        console.log('message:', message);
+        // console.log('message:', message);
 
         if (!message) {
             break;
@@ -938,12 +964,12 @@ async function getRawSummaryPrompt(context, prompt, msg_index = null) {
         console.log('every msg: ', entry);
         chatBuffer.push(entry);
 
-        const tokens = await countSourceTokens(getMemoryString(true), PADDING);
+        // const tokens = await countSourceTokens(getMemoryString(true), PADDING);
 
-        if (tokens > PROMPT_SIZE) {
-            chatBuffer.pop();
-            break;
-        }
+        // if (tokens > PROMPT_SIZE) {
+        //     chatBuffer.pop();
+        //     break;
+        // }
 
         latestUsedMessage = message;
 
@@ -1096,7 +1122,7 @@ function reinsertMemory() {
  * @param {boolean} saveToMessage Should the summary be saved to the chat message extra
  * @param {number|null} index Index of the chat message to save the summary to. If null, the pre-last message is used.
  */
-function setMemoryContext(value, saveToMessage, index = null) {
+function setMemoryContext(value, saveToMessage, index = 0, forwardIndex = 0) {
     setExtensionPrompt(MODULE_NAME, formatMemoryValue(value), extension_settings.memory.position, extension_settings.memory.depth, extension_settings.memory.scan, extension_settings.memory.role);
 
     $('#memory_contents').val(value);
@@ -1108,7 +1134,19 @@ function setMemoryContext(value, saveToMessage, index = null) {
 
     const context = getContext();
     if (saveToMessage && context.chat.length) {
-        const idx = index ?? context.chat.length - 2;
+        // 这里要查找最新的总结在哪里，然后用传来的value修改它
+
+        const chats = context.chat;
+        let lastIndex = 0;
+
+        for (let i = chats.length - 1; i >= 0; i--) {
+            if (chats[i].extra && chats[i].extra.memory) {
+                lastIndex = i;
+                break;
+            }
+        }
+
+        const idx = forwardIndex + lastIndex;
         const mes = context.chat[idx < 0 ? 0 : idx];
 
         if (!mes.extra) {
@@ -1203,6 +1241,8 @@ function setupListeners() {
     $('#memory_clear').off('click').on('click', onMemoryClearClick);
 
     $('#memory_summarize_to_index_button').off('click').on('click', onSummarizeToIndexClick);
+
+    $('#refresh_memory').off('click').on('click', onRefreshMemoryClick);
 }
 
 jQuery(async function () {

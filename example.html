@@ -1,9 +1,10 @@
+<link rel="stylesheet" href="summary-extension.css">
 <div id="memory_settings">
     <div class="inline-drawer">
         <div class="inline-drawer-toggle inline-drawer-header">
             <div class="flex-container alignitemscenter margin0">
                 <b data-i18n="ext_sum_title">Summarize</b>
-                <i id="summaryExtensionPopoutButton" class="fa-solid fa-window-restore menu_button margin0"></i>
+                <i id="summaryExtensionPopoutButton" class="fa-solid fa-window-restore menu_button margin0" title="在新窗口打开"></i>
             </div>
             <div class="inline-drawer-icon fa-solid fa-circle-chevron-down down"></div>
         </div>
@@ -25,139 +26,150 @@
                     </div>
                 </div>
 
-                <!-- 新增：显示 wordsSinceLastSummary 和 messagesSinceLastSummary -->
+                <!-- 显示 wordsSinceLastSummary 和 messagesSinceLastSummary -->
                 <div class="flex-container justifyspacebetween alignitemscenter">
-                    <div id="memory_counters" class="menu_button margin0" title="see how many messages has been summerized.">
+                    <div id="memory_counters" class="menu_button menu_button_icon" title="查看已总结的消息数量">
+                        <i class="fa-solid fa-list-ol"></i>
                         <span>查看总结楼层</span>
                     </div>
 
-                    <div id="memory_clear" class="menu_button margin0" title="Clear the message and word counters since the last summary.">
-                        <span>清空总结</span>
+                    <div id="memory_clear" class="menu_button menu_button_icon" title="清除自上次总结以来的消息和字数计数器">
+                        <i class="fa-solid fa-eraser"></i>
+                        <span>清空一次总结</span>
+                    </div>
+
+                    <div id="refresh_memory" class="menu_button menu_button_icon" title="刷新总结">
+                        <i class="fa-solid fa-arrows-rotate"></i>
+                        <span>刷新</span>
                     </div>
                 </div>
 
-                <!-- 新增：输入框和按钮 -->
+                <!-- 输入框和按钮 -->
                 <div class="flex-container justifyspacebetween alignitemscenter">
                     <label for="memory_summarize_to_index">输入要总结的层数:</label>
-                    <input id="memory_summarize_to_index" class="text_pole widthUnset" type="number" min="0" placeholder="Enter index" />
-                    <div id="memory_summarize_to_index_button" class="menu_button margin0" title="Summarize from the earliest unsummarized message to the specified index.">
+                    <input id="memory_summarize_to_index" class="text_pole widthUnset" type="number" min="0" placeholder="输入层数" value="10" />
+                    <div id="memory_summarize_to_index_button" class="menu_button menu_button_icon" title="从最早未总结的消息到指定索引进行总结">
+                        <i class="fa-solid fa-layer-group"></i>
                         <span>按楼层总结</span>
                     </div>
                 </div>
 
-                <textarea id="memory_contents" class="text_pole textarea_compact" rows="6" data-i18n="[placeholder]ext_sum_memory_placeholder" placeholder="Summary will be generated here..."></textarea>
-                <div class="memory_contents_controls">
-                    <div id="memory_force_summarize" data-summary-source="main,webllm" class="menu_button menu_button_icon" title="Trigger a summary update right now." data-i18n="[title]ext_sum_force_tip">
+                <textarea id="memory_contents" class="text_pole textarea_compact" rows="6" data-i18n="[placeholder]ext_sum_memory_placeholder" placeholder="总结将在这里生成..."></textarea>
+                <div class="memory_contents_controls flex-container justifyspacebetween alignitemscenter">
+                    <div id="memory_force_summarize" data-summary-source="main,webllm" class="menu_button menu_button_icon" title="立即触发总结更新" data-i18n="[title]ext_sum_force_tip">
                         <i class="fa-solid fa-database"></i>
-                        <span data-i18n="ext_sum_force_text">Summarize now</span>
+                        <span data-i18n="ext_sum_force_text">立即总结</span>
                     </div>
-                    <label for="memory_frozen" title="Disable automatic summary updates. While paused, the summary remains as-is. You can still force an update by pressing the Summarize now button (which is only available with the Main API)." data-i18n="[title]Disable automatic summary updates. While paused, the summary remains as-is. You can still force an update by pressing the Summarize now button (which is only available with the Main API)."><input id="memory_frozen" type="checkbox" /><span data-i18n="ext_sum_pause">Pause</span></label>
-                    <label data-summary-source="main" for="memory_skipWIAN" title="Omit World Info and Author's Note from text to be summarized. Only has an effect when using the Main API. The Extras API always omits WI/AN." data-i18n="[title]Omit World Info and Author's Note from text to be summarized. Only has an effect when using the Main API. The Extras API always omits WI/AN.">
+                    <label for="memory_frozen" title="禁用自动总结更新。暂停时，总结保持原样。您仍然可以通过按 立即总结 按钮强制更新（仅在使用主API时可用）" data-i18n="[title]Disable automatic summary updates. While paused, the summary remains as-is. You can still force an update by pressing the Summarize now button (which is only available with the Main API).">
+                        <input id="memory_frozen" type="checkbox" />
+                        <span data-i18n="ext_sum_pause">暂停</span>
+                    </label>
+                    <label data-summary-source="main" for="memory_skipWIAN" title="从要总结的文本中省略世界信息和作者注释。仅在使用主API时有效。Extras API始终省略WI/AN" data-i18n="[title]Omit World Info and Author's Note from text to be summarized. Only has an effect when using the Main API. The Extras API always omits WI/AN.">
                         <input id="memory_skipWIAN" type="checkbox" />
-                        <span data-i18n="ext_sum_no_wi_an">No WI/AN</span>
+                        <span data-i18n="ext_sum_no_wi_an">无WI/AN</span>
                     </label>
                 </div>
                 <div class="memory_contents_controls">
-                    <div id="summarySettingsBlockToggle" class="menu_button menu_button_icon" data-i18n="[title]ext_sum_settings_tip" title="Edit summarization prompt, insertion position, etc.">
+                    <div id="summarySettingsBlockToggle" class="menu_button menu_button_icon" data-i18n="[title]ext_sum_settings_tip" title="编辑总结提示、插入位置等">
                         <i class="fa-solid fa-cog"></i>
-                        <span data-i18n="ext_sum_settings">Summary Settings</span>
+                        <span data-i18n="ext_sum_settings">总结设置</span>
                     </div>
                 </div>
                 <div id="summarySettingsBlock" style="display:none;">
                     <div data-summary-source="main">
                         <label data-i18n="ext_sum_prompt_builder">
-                            Prompt builder
+                            提示构建器
                         </label>
-                        <label class="checkbox_label" for="memory_prompt_builder_raw_blocking" data-i18n="[title]ext_sum_prompt_builder_1_desc" title="Extension will build its own prompt using messages that were not summarized yet. Blocks the chat until the summary is generated.">
+                        <label class="checkbox_label" for="memory_prompt_builder_raw_blocking" data-i18n="[title]ext_sum_prompt_builder_1_desc" title="扩展将使用尚未总结的消息构建自己的提示。在生成总结之前阻塞聊天。">
                             <input id="memory_prompt_builder_raw_blocking" type="radio" name="memory_prompt_builder" value="1" />
-                            <span data-i18n="ext_sum_prompt_builder_1">Raw, blocking</span>
+                            <span data-i18n="ext_sum_prompt_builder_1">原始，阻塞</span>
                         </label>
-                        <label class="checkbox_label" for="memory_prompt_builder_raw_non_blocking" data-i18n="[title]ext_sum_prompt_builder_2_desc" title="Extension will build its own prompt using messages that were not summarized yet. Does not block the chat while the summary is being generated. Not all backends support this mode.">
+                        <label class="checkbox_label" for="memory_prompt_builder_raw_non_blocking" data-i18n="[title]ext_sum_prompt_builder_2_desc" title="扩展将使用尚未总结的消息构建自己的提示。在生成总结时不阻塞聊天。并非所有后端都支持此模式。">
                             <input id="memory_prompt_builder_raw_non_blocking" type="radio" name="memory_prompt_builder" value="2" />
-                            <span data-i18n="ext_sum_prompt_builder_2">Raw, non-blocking</span>
+                            <span data-i18n="ext_sum_prompt_builder_2">原始，非阻塞</span>
                         </label>
-                        <label class="checkbox_label" id="memory_prompt_builder_default" data-i18n="[title]ext_sum_prompt_builder_3_desc" title="Extension will use the regular main prompt builder and add the summary request to it as the last system message.">
+                        <label class="checkbox_label" id="memory_prompt_builder_default" data-i18n="[title]ext_sum_prompt_builder_3_desc" title="扩展将使用常规主提示构建器，并将总结请求作为最后一条系统消息添加到其中。">
                             <input id="memory_prompt_builder_default" type="radio" name="memory_prompt_builder" value="0" />
-                            <span data-i18n="ext_sum_prompt_builder_3">Classic, blocking</span>
+                            <span data-i18n="ext_sum_prompt_builder_3">经典，阻塞</span>
                         </label>
                     </div>
                     <div data-summary-source="main,webllm">
                         <label for="memory_prompt" class="title_restorable">
-                            <span data-i18n="Summary Prompt">Summary Prompt</span>
-                            <div id="memory_prompt_restore" data-i18n="[title]ext_sum_restore_default_prompt_tip" title="Restore default prompt" class="right_menu_button">
+                            <span data-i18n="Summary Prompt">总结提示</span>
+                            <div id="memory_prompt_restore" data-i18n="[title]ext_sum_restore_default_prompt_tip" title="恢复默认提示" class="right_menu_button">
                                 <div class="fa-solid fa-clock-rotate-left"></div>
                             </div>
                         </label>
-                        <textarea id="memory_prompt" class="text_pole textarea_compact" rows="6" data-i18n="[placeholder]ext_sum_prompt_placeholder" placeholder="This prompt will be sent to AI to request the summary generation. &lcub;&lcub;words&rcub;&rcub; will resolve to the 'Number of words' parameter."></textarea>
-                        <label for="memory_prompt_words"><span data-i18n="ext_sum_target_length_1">Target summary length</span> <span data-i18n="ext_sum_target_length_2">(</span><span id="memory_prompt_words_value"></span><span data-i18n="ext_sum_target_length_3"> words)</span></label>
+                        <textarea id="memory_prompt" class="text_pole textarea_compact" rows="6" data-i18n="[placeholder]ext_sum_prompt_placeholder" placeholder="此提示将发送给AI以请求生成总结。{{words}}将解析为"单词数"参数。"></textarea>
+                        <label for="memory_prompt_words"><span data-i18n="ext_sum_target_length_1">目标总结长度</span> <span data-i18n="ext_sum_target_length_2">(</span><span id="memory_prompt_words_value"></span><span data-i18n="ext_sum_target_length_3"> 词)</span></label>
                         <input id="memory_prompt_words" type="range" value="{{defaultSettings.promptWords}}" min="{{defaultSettings.promptMinWords}}" max="{{defaultSettings.promptMaxWords}}" step="{{defaultSettings.promptWordsStep}}" />
                         <label for="memory_override_response_length">
-                            <span data-i18n="ext_sum_api_response_length_1">API response length</span> <span data-i18n="ext_sum_api_response_length_2">(</span><span id="memory_override_response_length_value"></span><span data-i18n="ext_sum_api_response_length_3"> tokens)</span>
-                            <small class="memory_disabled_hint" data-i18n="ext_sum_0_default">0 = default</small>
+                            <span data-i18n="ext_sum_api_response_length_1">API响应长度</span> <span data-i18n="ext_sum_api_response_length_2">(</span><span id="memory_override_response_length_value"></span><span data-i18n="ext_sum_api_response_length_3"> 令牌)</span>
+                            <small class="memory_disabled_hint" data-i18n="ext_sum_0_default">0 = 默认</small>
                         </label>
                         <input id="memory_override_response_length" type="range" value="{{defaultSettings.overrideResponseLength}}" min="{{defaultSettings.overrideResponseLengthMin}}" max="{{defaultSettings.overrideResponseLengthMax}}" step="{{defaultSettings.overrideResponseLengthStep}}" />
                         <label for="memory_max_messages_per_request">
-                            <span data-i18n="ext_sum_raw_max_msg">[Raw/WebLLM] Max messages per request</span> (<span id="memory_max_messages_per_request_value"></span>)
-                            <small class="memory_disabled_hint" data-i18n="ext_sum_0_unlimited">0 = unlimited</small>
+                            <span data-i18n="ext_sum_raw_max_msg">[原始/WebLLM] 每个请求的最大消息数</span> (<span id="memory_max_messages_per_request_value"></span>)
+                            <small class="memory_disabled_hint" data-i18n="ext_sum_0_unlimited">0 = 无限制</small>
                         </label>
                         <input id="memory_max_messages_per_request" type="range" value="{{defaultSettings.maxMessagesPerRequest}}" min="{{defaultSettings.maxMessagesPerRequestMin}}" max="{{defaultSettings.maxMessagesPerRequestMax}}" step="{{defaultSettings.maxMessagesPerRequestStep}}" />
                         <h4 data-i18n="Update frequency" class="textAlignCenter">
-                            Update frequency
+                            更新频率
                         </h4>
                         <label for="memory_prompt_interval" class="title_restorable">
                             <span>
-                                <span data-i18n="ext_sum_update_every_messages_1">Update every</span> <span id="memory_prompt_interval_value"></span><span data-i18n="ext_sum_update_every_messages_2"> messages</span>
-                                <small class="memory_disabled_hint" data-i18n="ext_sum_0_disable">0 = disable</small>
+                                <span data-i18n="ext_sum_update_every_messages_1">每</span> <span id="memory_prompt_interval_value"></span><span data-i18n="ext_sum_update_every_messages_2"> 条消息更新</span>
+                                <small class="memory_disabled_hint" data-i18n="ext_sum_0_disable">0 = 禁用</small>
                             </span>
-                            <div id="memory_prompt_interval_auto" data-i18n="[title]ext_sum_auto_adjust_desc" title="Try to automatically adjust the interval based on the chat metrics." class="right_menu_button">
+                            <div id="memory_prompt_interval_auto" data-i18n="[title]ext_sum_auto_adjust_desc" title="尝试根据聊天指标自动调整间隔" class="right_menu_button">
                                 <div class="fa-solid fa-wand-magic-sparkles"></div>
                             </div>
                         </label>
                         <input id="memory_prompt_interval" type="range" value="{{defaultSettings.promptInterval}}" min="{{defaultSettings.promptMinInterval}}" max="{{defaultSettings.promptMaxInterval}}" step="{{defaultSettings.promptIntervalStep}}" />
                         <label for="memory_prompt_words_force" class="title_restorable">
                             <span>
-                                <span data-i18n="ext_sum_update_every_words_1">Update every</span> <span id="memory_prompt_words_force_value"></span><span data-i18n="ext_sum_update_every_words_2"> words</span>
-                                <small class="memory_disabled_hint" data-i18n="ext_sum_0_disable">0 = disable</small>
+                                <span data-i18n="ext_sum_update_every_words_1">每</span> <span id="memory_prompt_words_force_value"></span><span data-i18n="ext_sum_update_every_words_2"> 个词更新</span>
+                                <small class="memory_disabled_hint" data-i18n="ext_sum_0_disable">0 = 禁用</small>
                             </span>
-                            <div id="memory_prompt_words_auto" data-i18n="[title]ext_sum_auto_adjust_desc" title="Try to automatically adjust the interval based on the chat metrics." class="right_menu_button">
+                            <div id="memory_prompt_words_auto" data-i18n="[title]ext_sum_auto_adjust_desc" title="尝试根据聊天指标自动调整间隔" class="right_menu_button">
                                 <div class="fa-solid fa-wand-magic-sparkles"></div>
                             </div>
                         </label>
                         <input id="memory_prompt_words_force" type="range" value="{{defaultSettings.promptForceWords}}" min="{{defaultSettings.promptMinForceWords}}" max="{{defaultSettings.promptMaxForceWords}}" step="{{defaultSettings.promptForceWordsStep}}" />
-                        <small data-i18n="ext_sum_both_sliders">If both sliders are non-zero, then both will trigger summary updates at their respective intervals.</small>
+                        <small data-i18n="ext_sum_both_sliders">如果两个滑块都不为零，则两者都将按各自的间隔触发总结更新。</small>
                         <hr>
                     </div>
                     <div class="memory_template">
-                        <label for="memory_template" data-i18n="ext_sum_injection_template">Injection Template</label>
-                        <textarea id="memory_template" class="text_pole textarea_compact" rows="2" data-i18n="[placeholder]ext_sum_memory_template_placeholder" placeholder="&lcub;&lcub;summary&rcub;&rcub; will resolve to the current summary contents."></textarea>
+                        <label for="memory_template" data-i18n="ext_sum_injection_template">注入模板</label>
+                        <textarea id="memory_template" class="text_pole textarea_compact" rows="2" data-i18n="[placeholder]ext_sum_memory_template_placeholder" placeholder="{{summary}}将解析为当前总结内容。"></textarea>
                     </div>
-                    <label for="memory_position" data-i18n="ext_sum_injection_position">Injection Position</label>
-                    <label class="checkbox_label" for="memory_include_wi_scan" data-i18n="[title]ext_sum_include_wi_scan_desc" title="Include the latest summary in the WI scan.">
+                    <label for="memory_position" data-i18n="ext_sum_injection_position">注入位置</label>
+                    <label class="checkbox_label" for="memory_include_wi_scan" data-i18n="[title]ext_sum_include_wi_scan_desc" title="在WI扫描中包含最新的总结">
                         <input id="memory_include_wi_scan" type="checkbox" />
-                        <span data-i18n="ext_sum_include_wi_scan">Include in World Info Scanning</span>
+                        <span data-i18n="ext_sum_include_wi_scan">包含在世界信息扫描中</span>
                     </label>
                     <div class="radio_group">
                         <label>
                             <input type="radio" name="memory_position" value="-1" />
-                            <span data-i18n="None (not injected)">None (not injected)</span>
-                            <i class="fa-solid fa-info-circle" title="The summary will not be injected into the prompt. You can still access it via the &lcub;&lcub;summary&rcub;&rcub; macro." data-i18n="[title]ext_sum_injection_position_none"></i>
+                            <span data-i18n="None (not injected)">无（不注入）</span>
+                            <i class="fa-solid fa-info-circle" title="总结不会被注入到提示中。您仍然可以通过{{summary}}宏访问它。" data-i18n="[title]ext_sum_injection_position_none"></i>
                         </label>
                         <label>
                             <input type="radio" name="memory_position" value="2" />
-                            <span data-i18n="Before Main Prompt / Story String">Before Main Prompt / Story String</span>
+                            <span data-i18n="Before Main Prompt / Story String">在主提示/故事字符串之前</span>
                         </label>
                         <label>
                             <input type="radio" name="memory_position" value="0" />
-                            <span data-i18n="After Main Prompt / Story String">After Main Prompt / Story String</span>
+                            <span data-i18n="After Main Prompt / Story String">在主提示/故事字符串之后</span>
                         </label>
-                        <label class="flex-container alignItemsCenter" title="How many messages before the current end of the chat." data-i18n="[title]How many messages before the current end of the chat.">
+                        <label class="flex-container alignItemsCenter" title="在当前聊天结束前多少条消息" data-i18n="[title]How many messages before the current end of the chat.">
                             <input type="radio" name="memory_position" value="1" />
-                            <span data-i18n="In-chat @ Depth">In-chat @ Depth</span> <input id="memory_depth" class="text_pole widthUnset" type="number" min="0" max="9999" />
-                            <span data-i18n="as">as</span>
+                            <span data-i18n="In-chat @ Depth">聊天中 @ 深度</span> <input id="memory_depth" class="text_pole widthUnset" type="number" min="0" max="9999" />
+                            <span data-i18n="as">作为</span>
                             <select id="memory_role" class="text_pole widthNatural">
-                                <option value="0" data-i18n="System">System</option>
-                                <option value="1" data-i18n="User">User</option>
-                                <option value="2" data-i18n="Assistant">Assistant</option>
+                                <option value="0" data-i18n="System">系统</option>
+                                <option value="1" data-i18n="User">用户</option>
+                                <option value="2" data-i18n="Assistant">助手</option>
                             </select>
                         </label>
                     </div>
